@@ -79,7 +79,6 @@ WASTE_SIZE_MULTIPLIERS = {
     "van": 15.0
 }
 
-
 # Pydantic Models
 class EnvironmentalImpact(BaseModel):
     co2Emissions: float = Field(..., description="CO2 emissions in kg")
@@ -125,7 +124,7 @@ def get_county_from_postcode(postcode: str) -> str:
 
     # Try to match with known prefixes
     for prefix, county in POSTCODE_TO_COUNTY.items():
-        if postcode.startswith(prefix):
+        if outward_code == prefix:
             return county
 
     # Default fallback
