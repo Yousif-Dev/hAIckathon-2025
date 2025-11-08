@@ -1,6 +1,5 @@
 import streamlit as st
 from datetime import datetime
-import json
 
 # Page config
 st.set_page_config(
@@ -164,7 +163,8 @@ with tab2:
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.metric("Reports This Month", "47", "+12%")
+        housing_price = get_housing_price_reduction("WD24 7BA")
+        st.metric("Reports This Month", "47", f"{housing_price}%")
     with col2:
         st.metric("Avg Response Time", "3.2 days", "-0.8 days")
     with col3:
