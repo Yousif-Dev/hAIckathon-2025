@@ -49,7 +49,7 @@ def load_imds(
 
         # Select only the columns we need (matching CSV structure)
         # This ensures compatibility even if table has extra columns like id, created_at, etc.
-        required_columns = ['county', 'postcode', 'council', 'constituency', 'rank', 'decile', 'country']
+        required_columns = ['postcode', 'council', 'constituency', 'rank', 'decile', 'country']
 
         # Check if all required columns exist
         missing_columns = set(required_columns) - set(df.columns)
