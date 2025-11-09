@@ -2,14 +2,11 @@ import os
 from google import genai
 from google.genai import types
 
-
 def generate_summary(
         county: str,
         waste_size: str,
-        crime_change: float,
-        house_price_impact: float,
-        co2_emissions: float,
-        waste_type: str
+        waste_type: str,
+        area_features: str[]
 ) -> str:
     """
     Generate a personalized one-paragraph summary using Google Gemini.
@@ -18,10 +15,8 @@ def generate_summary(
     Args:
         county: The county where the incident occurred
         waste_size: Size classification (small_bag, medium_bag, large_bag, van)
-        crime_change: Percentage change in crime rate
-        house_price_impact: Percentage impact on house prices (negative)
-        co2_emissions: CO2 emissions in kg
         waste_type: Type of waste (household, construction, garden, hazardous)
+        area_features: list of nearby features, e.g ["schoolsAndEducationalFacilities", "residentialAreas", "placeOfWorship"]
 
     Returns:
         A personalized one-paragraph summary string
@@ -38,15 +33,13 @@ def generate_summary(
         # Create the prompt
         prompt = f"""You are a community impact analyst helping residents understand how fly-tipping affects them personally.
 
-Generate a compelling, personalized one-paragraph summary (4-6 sentences) that tells a story about how this fly-tipping incident impacts the individual resident.
+Generate a compelling, personalized one-paragraph summary (4-6 sentences) that tells a story about how this fly-tipping incident impacts local residents.
 
 INCIDENT DETAILS:
 - Location: {county}
 - Waste size: {waste_size.replace('_', ' ')}
 - Waste type: {waste_type}
-- Crime increase in area: {crime_change:.1f}%
-- House price impact: {house_price_impact:.1f}%
-- CO2 emissions: {co2_emissions:.1f} kg
+- Nearby features which should be mentioned: {", ".join(area_features)}
 
 WRITING GUIDELINES:
 1. Start with immediate personal impact (their property value, their safety, their environment)

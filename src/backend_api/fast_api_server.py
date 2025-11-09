@@ -11,7 +11,7 @@ from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gem
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
 from src.backend_api.supabase_integration import upload_image_to_supabase
-
+from src.backend_api.google_api_integration import find_places_by_postcode
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
 # Configure CORS
@@ -153,7 +153,7 @@ def get_county_from_postcode(postcode: str) -> str:
     # Default fallback
     return "Greater London"
 
-def calculate_impact(county: str, waste_size: str, image_data: bytes) -> FlytippingImpactResponse:
+def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: str) -> FlytippingImpactResponse:
     """Calculate the personalized impact metrics based on county and waste size."""
 
     # Get county metrics from CSV
@@ -193,8 +193,10 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
     waste_type = get_waste_type(image_data)
 
     # Summary
+    # Determine nearby features in the area (school, playground, hospital etc.)
+    area_features = find_places_by_postcode(postcode)
     # Use AI to generate summary here
-    summary = generate_summary(county, waste_size, crime_change, house_price_impact, co2_emissions, waste_type)
+    summary = generate_summary(county, waste_size, waste_type, area_features)
 
     image_url = upload_image_to_supabase(image_data)  # Stub function to upload image
 
@@ -240,7 +242,7 @@ async def process_flytipping_analysis(task_id: str, postcode: str, image_data: b
         waste_size = classify_waste_size_with_gemini(image_data)
 
         # Step 3: Calculate impact metrics
-        impact_result = calculate_impact(county, waste_size, image_data)
+        impact_result = calculate_impact(county, waste_size, image_data, postcode)
 
         # Store result
         task_results[task_id]["status"] = "completed"
