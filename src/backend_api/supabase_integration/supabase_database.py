@@ -5,7 +5,7 @@ from typing import Optional
 
 
 def load_county_data(
-        table_name: str = "haickathon_2025_table",
+        table_name: str = "haickathon_2025_updated",
         supabase_url: Optional[str] = None,
         supabase_key: Optional[str] = None
 ) -> pd.DataFrame:
@@ -55,7 +55,7 @@ def load_county_data(
 
         # Select only the columns we need (matching CSV structure)
         # This ensures compatibility even if table has extra columns like id, created_at, etc.
-        required_columns = ['county', 'air_quality_impact', 'co2_emission_kg', 'quality_of_life_impact']
+        required_columns = ['county', 'air_quality_impact', 'co2_emission_kg', 'quality_of_life_impact', 'deprivation_score', 'recycling_rate']
 
         # Check if all required columns exist
         missing_columns = set(required_columns) - set(df.columns)

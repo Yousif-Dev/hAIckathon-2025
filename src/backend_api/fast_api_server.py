@@ -11,8 +11,8 @@ from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gem
 from src.backend_api.council_url import find_council_reporting_page
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
-from src.backend_api.supabase.supabase_database import load_county_data
-from src.backend_api.supabase.supabase_images import upload_image_to_supabase
+from src.backend_api.supabase_integration.supabase_database import load_county_data
+from src.backend_api.supabase_integration.supabase_images import upload_image_to_supabase
 
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
@@ -174,14 +174,12 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
         air_quality = county_row['air_quality_impact']
         co2_base = county_row['co2_emission_kg']
         qol_impact = county_row['quality_of_life_impact']
-        incidents_per_1000 = county_row['incidents_per_1000']
         deprivation_index = county_row['deprivation_score']
         recycling_rate = county_row['recycling_rate']
     else:
         air_quality = float(county_row['air_quality_impact'].values[0])
         co2_base = float(county_row['co2_emission_kg'].values[0])
         qol_impact = float(county_row['quality_of_life_impact'].values[0])
-        incidents_per_1000 = float(county_row['incidents_per_1000'].values[0])
         deprivation_index = float(county_row['deprivation_score'].values[0])
         recycling_rate = float(county_row['recycling_rate'].values[0])
 
