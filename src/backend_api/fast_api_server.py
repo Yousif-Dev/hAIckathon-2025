@@ -4,7 +4,6 @@ from typing import List, Dict, Optional
 import pandas as pd
 import uuid
 from datetime import datetime
-import json
 
 from starlette.middleware.cors import CORSMiddleware
 
