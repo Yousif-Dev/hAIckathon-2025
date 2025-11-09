@@ -10,6 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gemini
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
+from src.backend_api.supabase_integration import upload_image_to_supabase
 
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
@@ -195,6 +196,8 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
     # Use AI to generate summary here
     summary = generate_summary(county, waste_size, crime_change, house_price_impact, co2_emissions, waste_type)
 
+    image_url = upload_image_to_supabase(image_data)  # Stub function to upload image
+
     # Council info (stub data)
     council_recommendations = [
         "Report fly-tipping incidents immediately via the council website",
@@ -207,6 +210,7 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
     return FlytippingImpactResponse(
         crimeChange=round(crime_change, 1),
         summary=summary,
+        imageUrl=image_url,
         deprivationIndex=round(deprivation_index, 1),
         housePriceImpact=round(house_price_impact, 1),
         environmentalImpact=EnvironmentalImpact(
