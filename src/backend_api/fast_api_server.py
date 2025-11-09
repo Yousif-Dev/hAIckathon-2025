@@ -7,6 +7,10 @@ from datetime import datetime
 
 from starlette.middleware.cors import CORSMiddleware
 
+from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gemini
+from src.backend_api.generate_summary import generate_summary
+from src.backend_api.get_waste_type import get_waste_type
+
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
 # Configure CORS
@@ -115,6 +119,8 @@ class FlytippingImpactResponse(BaseModel):
     housePriceImpact: float = Field(..., description="Percentage impact on house prices")
     environmentalImpact: EnvironmentalImpact
     councilInfo: CouncilInfo
+    summary: Optional[str] = Field(None, description="Summary of the impact")
+    imageUrl: Optional[str] = Field(None, description="URL of the image, uploaded")
 
 
 class SubmissionResponse(BaseModel):
@@ -146,19 +152,7 @@ def get_county_from_postcode(postcode: str) -> str:
     # Default fallback
     return "Greater London"
 
-
-def classify_waste_size_stub(image_data: bytes) -> str:
-    """
-    Stub function for OpenAI image classification.
-    In production, this would call OpenAI Vision API.
-    """
-    # TODO: Implement OpenAI Vision API call
-    # For now, return a random classification for testing
-    import random
-    return random.choice(["small_bag", "medium_bag", "large_bag", "van"])
-
-
-def calculate_impact(county: str, waste_size: str) -> FlytippingImpactResponse:
+def calculate_impact(county: str, waste_size: str, image_data: bytes) -> FlytippingImpactResponse:
     """Calculate the personalized impact metrics based on county and waste size."""
 
     # Get county metrics from CSV
@@ -194,6 +188,13 @@ def calculate_impact(county: str, waste_size: str) -> FlytippingImpactResponse:
     # Recycling rate (inversely related to fly-tipping)
     recycling_rate = max(10.0, 65.0 - (qol_impact * 50.0))
 
+    # Waste type (household, construction, garden, hazardous)
+    waste_type = get_waste_type(image_data)
+
+    # Summary
+    # Use AI to generate summary here
+    summary = generate_summary(county, waste_size, crime_change, house_price_impact, co2_emissions, waste_type)
+
     # Council info (stub data)
     council_recommendations = [
         "Report fly-tipping incidents immediately via the council website",
@@ -205,6 +206,7 @@ def calculate_impact(county: str, waste_size: str) -> FlytippingImpactResponse:
 
     return FlytippingImpactResponse(
         crimeChange=round(crime_change, 1),
+        summary=summary,
         deprivationIndex=round(deprivation_index, 1),
         housePriceImpact=round(house_price_impact, 1),
         environmentalImpact=EnvironmentalImpact(
@@ -231,10 +233,10 @@ async def process_flytipping_analysis(task_id: str, postcode: str, image_data: b
         county = get_county_from_postcode(postcode)
 
         # Step 2: Classify waste size using OpenAI (stubbed)
-        waste_size = classify_waste_size_stub(image_data)
+        waste_size = classify_waste_size_with_gemini(image_data)
 
         # Step 3: Calculate impact metrics
-        impact_result = calculate_impact(county, waste_size)
+        impact_result = calculate_impact(county, waste_size, image_data)
 
         # Store result
         task_results[task_id]["status"] = "completed"
