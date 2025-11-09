@@ -13,7 +13,7 @@ from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
 from src.backend_api.supabase_integration import upload_image_to_supabase
 from src.backend_api.google_api_integration import find_places_by_postcode
-from src.backend_api.supabase_integration.supabase_database import load_county_data
+from src.backend_api.supabase_integration.supabase_database import load_county_data, load_IMD
 from src.backend_api.supabase_integration.supabase_images import upload_image_to_supabase
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
@@ -37,6 +37,7 @@ task_results: Dict[str, dict] = {}
 
 # Load county data
 county_data = load_county_data(table_name="haickathon_2025_updated")
+imd_data = load_IMD(table_name="haickathon-2025-postcodes-new")
 
 # Postcode to county mapping (simplified - in production use a proper API/database)
 POSTCODE_TO_COUNTY = {
@@ -97,10 +98,10 @@ POSTCODE_TO_COUNTY = {
 
 # Waste size multipliers
 WASTE_SIZE_MULTIPLIERS = {
-    "small_bag": 1.0,
-    "medium_bag": 2.5,
-    "large_bag": 5.0,
-    "van": 15.0
+    "small_bag": 0.50,
+    "medium_bag": 0.75,
+    "large_bag": 1.0,
+    "van": 1.5
 }
 
 
@@ -182,6 +183,9 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
         qol_impact = float(county_row['quality_of_life_impact'].values[0])
         deprivation_index = float(county_row['deprivation_score'].values[0])
         recycling_rate = float(county_row['recycling_rate'].values[0])
+
+    # Apply IMD for deprivation_index
+    deprivation_index = imd_data[imd_data['postcode'] == postcode]['decile']
 
     # Apply waste size multiplier
     multiplier = WASTE_SIZE_MULTIPLIERS[waste_size]

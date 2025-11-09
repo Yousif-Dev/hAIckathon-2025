@@ -29,18 +29,7 @@ The application consists of three main sections:
 
 # TODO:
 
-- Have the model determine the TYPE, SIZE, location (rural vs city, destroying our beautiful natural woods vs our kids are playing in trash type shit)? FEED INTO IMPACT SUMMARY
-  - Household (furniture, matterses, general rubbish)
-  - Construction ( Bricks, itmber asbestos)
-  - Hazardous waste (Oils batteries chemicals)
-  - Garden waste
-  - Electrical
-  - Furniture
-
 - Flush out the API, do some checks to improve the quality of data it is getting
   - Mainly from a datasci PoV, will mainly be yousif
-- 11 labs integration?
 - look into support with forms using AI (ie yousifs idea)
-- For the AI statement, feed it some data about the location to personalise it a bit (SEE THE FIRST POINT)
-  - Leveraging AI to seamlessly build a persuasive, ready to ship argument to eliminate barriers for improving community responsibillity
 

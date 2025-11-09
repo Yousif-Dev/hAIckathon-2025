@@ -4,6 +4,73 @@ from supabase import create_client, Client
 from typing import Optional
 
 
+def load_IMDS(
+        table_name: str = "haickathon-2025-postcodes-new",
+        supabase_url: Optional[str] = None,
+        supabase_key: Optional[str] = None
+) -> pd.DataFrame:
+    """
+    Load IMDS data from Supabase.
+    Returns a pandas DataFrame with the same structure as the CSV file.
+
+    Args:
+        table_name: Name of the Supabase table 
+        supabase_url: Supabase URL (optional, reads from env if not provided)
+        supabase_key: Supabase key (optional, reads from env if not provided)
+
+    Returns:
+        pandas DataFrame with columns: postcode, council, constituency, rank, decile, country
+
+    Raises:
+        ValueError: If Supabase credentials are not provided or set in environment
+        Exception: If data cannot be loaded from Supabase
+    """
+    try:
+        # Get Supabase credentials
+        url = supabase_url or os.environ.get("SUPABASE_URL")
+        key = supabase_key or os.environ.get("SUPABASE_KEY")
+
+        if not url or not key:
+            raise ValueError(
+                "SUPABASE_URL and SUPABASE_KEY must be provided or set in environment variables"
+            )
+
+        # Initialize Supabase client
+        supabase: Client = create_client(url, key)
+
+        # Fetch all data from the table
+        response = supabase.table(table_name).select("*").execute()
+
+        # Convert to DataFrame
+        if not response.data:
+            raise Exception(f"No data found in table '{table_name}'")
+
+        df = pd.DataFrame(response.data)
+
+        # Select only the columns we need (matching CSV structure)
+        # This ensures compatibility even if table has extra columns like id, created_at, etc.
+        required_columns = ['county', 'postcode', 'council', 'constituency', 'rank', 'decile', 'country']
+
+        # Check if all required columns exist
+        missing_columns = set(required_columns) - set(df.columns)
+        if missing_columns:
+            raise ValueError(f"Missing required columns in table: {missing_columns}")
+
+        # Return only the required columns in the correct order
+        df = df[required_columns]
+
+        # Ensure numeric columns are the correct type
+        numeric_columns = ['rank']
+        for col in numeric_columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
+        print(f"✅ Loaded {len(df)} counties from Supabase")
+        return df
+
+    except Exception as e:
+        print(f"❌ Error loading county data from Supabase: {e}")
+        raise
+
 def load_county_data(
         table_name: str = "haickathon_2025_updated",
         supabase_url: Optional[str] = None,
