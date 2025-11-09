@@ -59,7 +59,7 @@ Your one-paragraph summary:"""
 
         # Generate content
         response = client.models.generate_content(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-flash",
             contents=[types.Part.from_text(text=prompt)]
         )
 

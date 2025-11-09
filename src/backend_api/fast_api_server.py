@@ -36,7 +36,6 @@ task_results: Dict[str, dict] = {}
 
 # Load county data
 county_data = load_county_data(table_name="haickathon_2025_updated")
-imd_data = load_imds(table_name="haickathon-2025-postcodes-new")
 
 # Postcode to county mapping (simplified - in production use a proper API/database)
 POSTCODE_TO_COUNTY = {
@@ -164,7 +163,7 @@ def get_county_from_postcode(postcode: str) -> str:
 
 def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: str) -> FlytippingImpactResponse:
     """Calculate the personalized impact metrics based on county and waste size."""
-
+    imd_data = load_imds(table_name="haickathon-2025-postcodes-new", postcode=postcode)
     # Get county metrics from CSV
     county_row = county_data[county_data['county'] == county]
 
@@ -225,7 +224,7 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
         crimeChange=round(crime_change, 1),
         summary=summary,
         imageUrl=image_url,
-        deprivationIndex=round(deprivation_index, 1),
+        deprivationIndex=round(float(deprivation_index.values[0]), 1),
         housePriceImpact=round(house_price_impact, 1),
         environmentalImpact=EnvironmentalImpact(
             co2Emissions=round(co2_emissions, 1),

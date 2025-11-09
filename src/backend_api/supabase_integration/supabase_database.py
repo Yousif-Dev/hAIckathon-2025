@@ -6,8 +6,9 @@ from typing import Optional
 
 def load_imds(
         table_name: str = "haickathon-2025-postcodes-new",
+        postcode: str = "",
         supabase_url: Optional[str] = None,
-        supabase_key: Optional[str] = None
+        supabase_key: Optional[str] = None,
 ) -> pd.DataFrame:
     """
     Load IMDS data from Supabase.
@@ -39,7 +40,8 @@ def load_imds(
         supabase: Client = create_client(url, key)
 
         # Fetch all data from the table
-        response = supabase.table(table_name).select("*").execute()
+        response = supabase.table(table_name).select("*").eq("postcode", postcode).execute()
+
 
         # Convert to DataFrame
         if not response.data:
