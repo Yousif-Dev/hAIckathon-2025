@@ -1,39 +1,42 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
-from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
-import pandas as pd
+import re
 import uuid
 from datetime import datetime
+from typing import List, Dict, Optional
 
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
+from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 
 from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gemini
+from src.backend_api.council_url import find_council_reporting_page
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
 from src.backend_api.supabase_integration import upload_image_to_supabase
 from src.backend_api.google_api_integration import find_places_by_postcode
+from src.backend_api.supabase_integration.supabase_database import load_county_data
+from src.backend_api.supabase_integration.supabase_images import upload_image_to_supabase
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",           # Local development
-        "http://localhost:5173",           # Vite default port
-        "https://*.lovableproject.com",    # Lovable preview URLs
-        "https://*.lovable.app",           # Lovable production URLs
-        "*"                                 # Allow all origins (use cautiously!)
+        "http://localhost:3000",  # Local development
+        "http://localhost:5173",  # Vite default port
+        "https://*.lovableproject.com",  # Lovable preview URLs
+        "https://*.lovable.app",  # Lovable production URLs
+        "*"  # Allow all origins (use cautiously!)
     ],
     allow_credentials=True,
-    allow_methods=["*"],                   # Allow all methods (GET, POST, etc.)
-    allow_headers=["*"],                   # Allow all headers
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
 
 # In-memory storage for task results (in production, use Redis or a database)
 task_results: Dict[str, dict] = {}
 
 # Load county data
-county_data = pd.read_csv("uk_county_flytip_metrics.csv")
+county_data = load_county_data(table_name="haickathon_2025_updated")
 
 # Postcode to county mapping (simplified - in production use a proper API/database)
 POSTCODE_TO_COUNTY = {
@@ -100,6 +103,7 @@ WASTE_SIZE_MULTIPLIERS = {
     "van": 15.0
 }
 
+
 # Pydantic Models
 class EnvironmentalImpact(BaseModel):
     co2Emissions: float = Field(..., description="CO2 emissions in kg")
@@ -138,17 +142,22 @@ class TaskStatusResponse(BaseModel):
 
 
 def get_county_from_postcode(postcode: str) -> str:
-    """Extract county from UK postcode."""
-    # Remove spaces and convert to uppercase
-    postcode = postcode.replace(" ", "").upper()
+    if not postcode or not isinstance(postcode, str):
+        return "Greater London"
 
-    # Extract outward code (first part of postcode)
-    outward_code = postcode.split()[0] if " " in postcode else postcode[:2]
+    # Normalize and split to get outward code (keep characters before the space)
+    postcode = postcode.strip().upper()
+    parts = postcode.split()
+    outward = parts[0] if parts else postcode
 
-    # Try to match with known prefixes
-    for prefix, county in POSTCODE_TO_COUNTY.items():
-        if outward_code == prefix:
-            return county
+    # Extract the leading letters from the outward code (postcode area)
+    m = re.match(r"^([A-Z]+)", outward)
+    area_letters = m.group(1) if m else ""
+
+    # Try to find the longest matching prefix in the mapping
+    for key in sorted(POSTCODE_TO_COUNTY.keys(), key=len, reverse=True):
+        if outward.startswith(key) or area_letters.startswith(key):
+            return POSTCODE_TO_COUNTY[key]
 
     # Default fallback
     return "Greater London"
@@ -165,10 +174,14 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
         air_quality = county_row['air_quality_impact']
         co2_base = county_row['co2_emission_kg']
         qol_impact = county_row['quality_of_life_impact']
+        deprivation_index = county_row['deprivation_score']
+        recycling_rate = county_row['recycling_rate']
     else:
         air_quality = float(county_row['air_quality_impact'].values[0])
         co2_base = float(county_row['co2_emission_kg'].values[0])
         qol_impact = float(county_row['quality_of_life_impact'].values[0])
+        deprivation_index = float(county_row['deprivation_score'].values[0])
+        recycling_rate = float(county_row['recycling_rate'].values[0])
 
     # Apply waste size multiplier
     multiplier = WASTE_SIZE_MULTIPLIERS[waste_size]
@@ -182,12 +195,6 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
 
     # House price impact (negative correlation)
     house_price_impact = -qol_impact * 4.5 * multiplier
-
-    # Deprivation index (higher fly-tipping = higher deprivation)
-    deprivation_index = min(10.0, 5.0 + (qol_impact * 3.0))
-
-    # Recycling rate (inversely related to fly-tipping)
-    recycling_rate = max(10.0, 65.0 - (qol_impact * 50.0))
 
     # Waste type (household, construction, garden, hazardous)
     waste_type = get_waste_type(image_data)
@@ -209,6 +216,8 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
         f"Fly-tipping costs your council £{int(multiplier * 200)} to clear - help us reduce this burden"
     ]
 
+    council_url_llm = find_council_reporting_page(county)
+
     return FlytippingImpactResponse(
         crimeChange=round(crime_change, 1),
         summary=summary,
@@ -222,8 +231,8 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
         ),
         councilInfo=CouncilInfo(
             name=f"{county} Council",
-            reportingUrl=f"https://www.{county.lower().replace(' ', '')}.gov.uk/report-flytipping",
-            contactNumber="0800 123 4567",  # Stub number
+            reportingUrl=council_url_llm.council_website,
+            contactNumber=council_url_llm.contact_number,
             recommendations=council_recommendations
         )
     )
