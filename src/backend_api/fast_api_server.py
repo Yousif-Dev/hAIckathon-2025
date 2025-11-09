@@ -8,6 +8,7 @@ from datetime import datetime
 from starlette.middleware.cors import CORSMiddleware
 
 from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gemini
+from src.backend_api.council_url import find_council_reporting_page
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
 from src.backend_api.supabase_integration import upload_image_to_supabase
@@ -207,6 +208,9 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
         f"Fly-tipping costs your council £{int(multiplier * 200)} to clear - help us reduce this burden"
     ]
 
+    council_url_llm = find_council_reporting_page(county)
+
+
     return FlytippingImpactResponse(
         crimeChange=round(crime_change, 1),
         summary=summary,
@@ -220,8 +224,8 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
         ),
         councilInfo=CouncilInfo(
             name=f"{county} Council",
-            reportingUrl=f"https://www.{county.lower().replace(' ', '')}.gov.uk/report-flytipping",
-            contactNumber="0800 123 4567",  # Stub number
+            reportingUrl=council_url_llm.council_website,
+            contactNumber=council_url_llm.contact_number,
             recommendations=council_recommendations
         )
     )
