@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fly-Tipping Reporting System - Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .diagram {
+            display: flex;
+            gap: 60px;
+            margin-top: 40px;
+            position: relative;
+            align-items: flex-start;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        .layer {
+            margin-bottom: 40px;
+        }
+
+        .layer-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .box {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .box-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .box-description {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .external-services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .service-box {
+            background: linear-gradient(135deg, #f6f8fb 0%, #e9ecef 100%);
+            border: 2px solid #cbd5e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .service-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .service-title {
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .service-desc {
+            color: #718096;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 2px;
+            background: #cbd5e0;
+        }
+
+        .arrow-horizontal {
+            height: 2px;
+            width: 60px;
+            background: linear-gradient(90deg, #cbd5e0 0%, #cbd5e0 100%);
+            position: relative;
+        }
+
+        .arrow-horizontal::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: -12px;
+            font-size: 1.5rem;
+            color: #cbd5e0;
+        }
+
+        .connection-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 40px;
+            background: linear-gradient(180deg, #cbd5e0 0%, transparent 100%);
+        }
+
+        .tech-stack {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .tech-stack h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .tech-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .tech-item strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .tech-item span {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .features {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            opacity: 0.95;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .backend-box {
+            border-color: #667eea;
+            border-width: 3px;
+        }
+
+        .frontend-box {
+            border-color: #48bb78;
+            border-width: 3px;
+        }
+
+        .data-flow {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: #cbd5e0;
+            margin: 0 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .diagram {
+                flex-direction: column;
+                gap: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ Fly-Tipping Impact Analysis System</h1>
+        <p class="subtitle">AI-Powered Environmental Reporting Platform with Contextual Impact Analysis</p>
+
+        <div class="layer-title">External Services & APIs</div>
+        <div class="external-services">
+            <div class="service-box">
+                <div class="service-title">🗺️ Google Maps API</div>
+                <div class="service-desc">Geocoding, location services, and spatial data</div>
+            </div>
+            <div class="service-box">
+                <div class="service-title">🗄️ Supabase</div>
+                <div class="service-desc">Cloud database, authentication, and image storage</div>
+            </div>
+            <div class="service-box">
+                <div class="service-title">✨ Google Gemini</div>
+                <div class="service-desc">Vision AI for waste classification and text synthesis</div>
+            </div>
+            <div class="service-box">
+                <div class="service-title">🔊 ElevenLabs (TTS)</div>
+                <div class="service-desc">Text-to-speech for accessibility features</div>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <div class="column">
+                <div class="layer">
+                    <div class="layer-title">Backend Layer</div>
+                    <div class="box backend-box">
+                        <div class="box-title">
+                            <div class="icon">🚀</div>
+                            FastAPI Python App
+                        </div>
+                        <div class="box-description">
+                            <strong>RESTful API Server</strong><br><br>
+                            Handles incoming requests from the frontend, orchestrates data processing, and serves computed impact metrics.
+                            <br><br>
+                            <strong>Key Responsibilities:</strong>
+                            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                                <li>🔄 Async request handling</li>
+                                <li>📤 Image upload processing</li>
+                                <li>🧮 Impact calculation engine</li>
+                                <li>🗺️ Postcode → County mapping</li>
+                                <li>🔍 Council data lookup</li>
+                                <li>📊 Background task processing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 30px; position: relative;">
+                    <div style="position: absolute; left: 50%; transform: translateX(-50%); font-size: 2rem; color: #cbd5e0;">↓</div>
+                </div>
+
+                <div class="layer">
+                    <div class="layer-title">AI Processing Pipeline</div>
+                    <div style="display: grid; gap: 15px;">
+                        <div class="box" style="border-color: #f6ad55; border-width: 2px;">
+                            <div class="box-title">
+                                <div class="icon">📸</div>
+                                Waste Size Classifier
+                            </div>
+                            <div class="box-description">
+                                Uses <strong>Gemini Vision</strong> to analyze uploaded images and classify waste size into: small_bag, medium_bag, large_bag, or van load.
+                            </div>
+                        </div>
+
+                        <div class="box" style="border-color: #f6ad55; border-width: 2px;">
+                            <div class="box-title">
+                                <div class="icon">🏷️</div>
+                                Waste Type Classifier
+                            </div>
+                            <div class="box-description">
+                                Identifies waste category: household, construction, garden, hazardous, furniture, or electrical using <strong>Gemini Vision</strong>.
+                            </div>
+                        </div>
+
+                        <div class="box" style="border-color: #f6ad55; border-width: 2px;">
+                            <div class="box-title">
+                                <div class="icon">📝</div>
+                                Impact Summary Generator
+                            </div>
+                            <div class="box-description">
+                                Creates personalized narrative using <strong>Gemini</strong> about how this specific incident affects the individual resident.
+                            </div>
+                        </div>
+
+                        <div class="box" style="border-color: #f6ad55; border-width: 2px;">
+                            <div class="box-title">
+                                <div class="icon">🏛️</div>
+                                Council Finder
+                            </div>
+                            <div class="box-description">
+                                Uses <strong>Gemini + Google Search</strong> to find official council reporting pages and contact information.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: center;">
+                <div style="font-size: 3rem; color: #cbd5e0;">⟷</div>
+            </div>
+
+            <div class="column">
+                <div class="layer">
+                    <div class="layer-title">Frontend Layer</div>
+                    <div class="box frontend-box">
+                        <div class="box-title">
+                            <div class="icon">⚛️</div>
+                            React/Lovable Frontend
+                        </div>
+                        <div class="box-description">
+                            <strong>User-Facing Application</strong><br><br>
+                            Allows users to submit fly-tipping reports with photos, view personalized impact analysis, and access next steps for reporting.
+                            <br><br>
+                            <strong>Key Features:</strong>
+                            <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                                <li>📸 Camera/upload image capture</li>
+                                <li>📍 Postcode entry & validation</li>
+                                <li>⏳ Real-time processing status</li>
+                                <li>📊 Impact visualization</li>
+                                <li>🎯 Personalized recommendations</li>
+                                <li>🔗 Direct council reporting links</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 30px; position: relative;">
+                    <div style="position: absolute; left: 50%; transform: translateX(-50%); font-size: 2rem; color: #cbd5e0;">↓</div>
+                </div>
+
+                <div class="layer">
+                    <div class="layer-title">User Experience Flow</div>
+                    <div style="display: grid; gap: 15px;">
+                        <div class="box" style="background: linear-gradient(135deg, #e6f7ff 0%, #d9f0ff 100%); border-color: #48bb78;">
+                            <div class="box-title" style="color: #2d3748;">
+                                <span style="font-size: 1.5rem; margin-right: 10px;">1️⃣</span>
+                                Report Submission
+                            </div>
+                            <div class="box-description">
+                                User uploads photo and provides postcode. Frontend validates input and sends to backend API.
+                            </div>
+                        </div>
+
+                        <div class="box" style="background: linear-gradient(135deg, #fff5e6 0%, #ffe6cc 100%); border-color: #48bb78;">
+                            <div class="box-title" style="color: #2d3748;">
+                                <span style="font-size: 1.5rem; margin-right: 10px;">2️⃣</span>
+                                AI Analysis
+                            </div>
+                            <div class="box-description">
+                                System processes image, classifies waste, calculates environmental impact, and generates personalized summary.
+                            </div>
+                        </div>
+
+                        <div class="box" style="background: linear-gradient(135deg, #e6ffe6 0%, #ccffcc 100%); border-color: #48bb78;">
+                            <div class="box-title" style="color: #2d3748;">
+                                <span style="font-size: 1.5rem; margin-right: 10px;">3️⃣</span>
+                                Impact Report
+                            </div>
+                            <div class="box-description">
+                                User sees personalized impact (property value, health, crime), receives actionable recommendations, and gets council reporting link.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-stack">
+            <h3>🛠️ Technology Stack</h3>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <strong>Backend Framework</strong>
+                    <span>FastAPI (Python 3.10+) with async support</span>
+                </div>
+                <div class="tech-item">
+                    <strong>Frontend Framework</strong>
+                    <span>React + Lovable (with Supabase integration)</span>
+                </div>
+                <div class="tech-item">
+                    <strong>AI/ML</strong>
+                    <span>Google Gemini 2.0 Flash (Vision & Text)</span>
+                </div>
+                <div class="tech-item">
+                    <strong>Database</strong>
+                    <span>Supabase (PostgreSQL + Storage + Auth)</span>
+                </div>
+                <div class="tech-item">
+                    <strong>Data Sources</strong>
+                    <span>DEFRA ENV24, IoD 2025, UK-AIR, Police.UK</span>
+                </div>
+                <div class="tech-item">
+                    <strong>Deployment</strong>
+                    <span>FastAPI on Render/Railway, Frontend on Lovable</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h4>🎯 Personalized Impact</h4>
+                <p>Shows how this specific incident affects YOU: your property value, your air quality, your neighborhood safety - not just generic statistics.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🤖 AI-Powered Analysis</h4>
+                <p>Computer vision automatically classifies waste type and size. Natural language generation creates compelling, contextual impact narratives.</p>
+            </div>
+            <div class="feature-card">
+                <h4>📊 Real Government Data</h4>
+                <p>Built on official UK statistics: 1.15M incidents, £84M annual costs, real deprivation indices, actual air quality measurements.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔗 Direct Action</h4>
+                <p>Automatic council lookup provides exact reporting URLs and contact details - no searching required. One-click reporting to local authorities.</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #f7fafc; border-radius: 12px; border-left: 4px solid #667eea;">
+            <h3 style="color: #2d3748; margin-bottom: 15px;">💡 Why This Architecture?</h3>
+            <div style="color: #4a5568; line-height: 1.8;">
+                <strong>Separation of Concerns:</strong> Backend handles complex AI processing and data calculations while frontend focuses on user experience.<br><br>
+                <strong>Scalability:</strong> Async FastAPI can handle multiple concurrent requests. Background tasks prevent user waiting during AI processing.<br><br>
+                <strong>Real-time Data:</strong> Supabase provides instant updates, image storage without managing servers, and built-in authentication.<br><br>
+                <strong>AI Integration:</strong> Gemini Vision handles both image analysis and text generation with a single API, reducing complexity and cost.<br><br>
+                <strong>Data Quality:</strong> Using real government datasets (DEFRA, IoD, UK-AIR) makes the impact analysis credible and defensible.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
