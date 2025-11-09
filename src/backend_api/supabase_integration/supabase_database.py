@@ -4,7 +4,7 @@ from supabase import create_client, Client
 from typing import Optional
 
 
-def load_IMDS(
+def load_imds(
         table_name: str = "haickathon-2025-postcodes-new",
         supabase_url: Optional[str] = None,
         supabase_key: Optional[str] = None
@@ -208,3 +208,7 @@ if __name__ == "__main__":
         print("1. Created the table in Supabase (see SUPABASE_MIGRATION_GUIDE.md)")
         print("2. Uploaded your CSV data to the table")
         print("3. Set SUPABASE_URL and SUPABASE_KEY in your .env file")
+
+
+def load_IMDs():
+    return None

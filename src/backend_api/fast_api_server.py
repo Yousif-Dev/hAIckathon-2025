@@ -12,7 +12,7 @@ from src.backend_api.council_url import find_council_reporting_page
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
 from src.backend_api.google_api_integration import find_places_by_postcode
-from src.backend_api.supabase_integration.supabase_database import load_county_data, load_IMDs
+from src.backend_api.supabase_integration.supabase_database import load_county_data, load_imds
 from src.backend_api.supabase_integration.supabase_images import upload_image_to_supabase
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
@@ -36,7 +36,7 @@ task_results: Dict[str, dict] = {}
 
 # Load county data
 county_data = load_county_data(table_name="haickathon_2025_updated")
-imd_data = load_IMDs(table_name="haickathon-2025-postcodes-new")
+imd_data = load_imds(table_name="haickathon-2025-postcodes-new")
 
 # Postcode to county mapping (simplified - in production use a proper API/database)
 POSTCODE_TO_COUNTY = {
