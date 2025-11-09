@@ -34,6 +34,9 @@ The application consists of three main sections:
   - Construction ( Bricks, itmber asbestos)
   - Hazardous waste (Oils batteries chemicals)
   - Garden waste
+  - Electrical
+  - Furniture
+
 - Flush out the API, do some checks to improve the quality of data it is getting
   - Mainly from a datasci PoV, will mainly be yousif
 - 11 labs integration?
