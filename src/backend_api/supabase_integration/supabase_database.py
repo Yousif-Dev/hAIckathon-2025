@@ -39,9 +39,10 @@ def load_imds(
         # Initialize Supabase client
         supabase: Client = create_client(url, key)
 
+        postcode = postcode.upper()
+
         # Fetch all data from the table
         response = supabase.table(table_name).select("*").eq("postcode", postcode).execute()
-
 
         # Convert to DataFrame
         if not response.data:
