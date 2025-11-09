@@ -200,7 +200,7 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
 
     # Summary
     # Determine nearby features in the area (school, playground, hospital etc.)
-    area_features = find_places_by_postcode(postcode)
+    _, area_features = find_places_by_postcode(postcode)
     # Use AI to generate summary here
     summary = generate_summary(county, waste_size, waste_type, area_features)
 
