@@ -6,7 +6,24 @@ import uuid
 from datetime import datetime
 import json
 
+from starlette.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",           # Local development
+        "http://localhost:5173",           # Vite default port
+        "https://*.lovableproject.com",    # Lovable preview URLs
+        "https://*.lovable.app",           # Lovable production URLs
+        "*"                                 # Allow all origins (use cautiously!)
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],                   # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],                   # Allow all headers
+)
 
 # In-memory storage for task results (in production, use Redis or a database)
 task_results: Dict[str, dict] = {}
