@@ -11,7 +11,8 @@ from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gem
 from src.backend_api.council_url import find_council_reporting_page
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
-from src.backend_api.supabase_integration import upload_image_to_supabase
+from src.backend_api.supabase.supabase_database import load_county_data
+from src.backend_api.supabase.supabase_images import upload_image_to_supabase
 
 app = FastAPI(title="Fly-Tipping Impact API", version="1.0.0")
 
@@ -34,7 +35,7 @@ app.add_middleware(
 task_results: Dict[str, dict] = {}
 
 # Load county data
-county_data = pd.read_csv("uk_county_flytip_metrics.csv")
+county_data = load_county_data()
 
 # Postcode to county mapping (simplified - in production use a proper API/database)
 POSTCODE_TO_COUNTY = {
