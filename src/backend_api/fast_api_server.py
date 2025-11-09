@@ -35,7 +35,7 @@ app.add_middleware(
 task_results: Dict[str, dict] = {}
 
 # Load county data
-county_data = load_county_data()
+county_data = load_county_data(table_name="haickathon_2025_updated")
 
 # Postcode to county mapping (simplified - in production use a proper API/database)
 POSTCODE_TO_COUNTY = {
@@ -174,10 +174,16 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
         air_quality = county_row['air_quality_impact']
         co2_base = county_row['co2_emission_kg']
         qol_impact = county_row['quality_of_life_impact']
+        incidents_per_1000 = county_row['incidents_per_1000']
+        deprivation_index = county_row['deprivation_score']
+        recycling_rate = county_row['recycling_rate']
     else:
         air_quality = float(county_row['air_quality_impact'].values[0])
         co2_base = float(county_row['co2_emission_kg'].values[0])
         qol_impact = float(county_row['quality_of_life_impact'].values[0])
+        incidents_per_1000 = float(county_row['incidents_per_1000'].values[0])
+        deprivation_index = float(county_row['deprivation_score'].values[0])
+        recycling_rate = float(county_row['recycling_rate'].values[0])
 
     # Apply waste size multiplier
     multiplier = WASTE_SIZE_MULTIPLIERS[waste_size]
@@ -191,12 +197,6 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes) -> Flytipp
 
     # House price impact (negative correlation)
     house_price_impact = -qol_impact * 4.5 * multiplier
-
-    # Deprivation index (higher fly-tipping = higher deprivation)
-    deprivation_index = min(10.0, 5.0 + (qol_impact * 3.0))
-
-    # Recycling rate (inversely related to fly-tipping)
-    recycling_rate = max(10.0, 65.0 - (qol_impact * 50.0))
 
     # Waste type (household, construction, garden, hazardous)
     waste_type = get_waste_type(image_data)
