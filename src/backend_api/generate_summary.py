@@ -6,7 +6,7 @@ def generate_summary(
         county: str,
         waste_size: str,
         waste_type: str,
-        area_features: str[]
+        area_features: list[str]
 ) -> str:
     """
     Generate a personalized one-paragraph summary using Google Gemini.
@@ -75,11 +75,6 @@ Your one-paragraph summary:"""
         # Fallback summary if API fails
         return (
             f"This {waste_type} fly-tipping incident in {county} directly impacts your quality of life. "
-            f"It contributes to a {abs(house_price_impact):.1f}% reduction in local property values, "
-            f"releases {co2_emissions:.1f}kg of CO2 into your air, and is associated with a "
-            f"{crime_change:.1f}% increase in local crime rates. Every unreported incident makes "
-            f"your neighborhood less safe and less valuable. By reporting this, you're taking "
-            f"the first step toward breaking the cycle and reclaiming your community's future."
         )
 
 
@@ -92,10 +87,8 @@ if __name__ == "__main__":
     test_summary = generate_summary(
         county="Greater London",
         waste_size="medium_bag",
-        crime_change=12.5,
-        house_price_impact=-3.2,
-        co2_emissions=45.8,
-        waste_type="hazardous"
+        waste_type="hazardous",
+        area_features=["residentialAreas", "placeOfWorship"]
     )
 
     print("Generated Summary:")

@@ -11,7 +11,6 @@ from src.backend_api.classify_waste_bag_size import classify_waste_size_with_gem
 from src.backend_api.council_url import find_council_reporting_page
 from src.backend_api.generate_summary import generate_summary
 from src.backend_api.get_waste_type import get_waste_type
-from src.backend_api.supabase_integration import upload_image_to_supabase
 from src.backend_api.google_api_integration import find_places_by_postcode
 from src.backend_api.supabase_integration.supabase_database import load_county_data, load_IMD
 from src.backend_api.supabase_integration.supabase_images import upload_image_to_supabase
@@ -205,7 +204,7 @@ def calculate_impact(county: str, waste_size: str, image_data: bytes, postcode: 
 
     # Summary
     # Determine nearby features in the area (school, playground, hospital etc.)
-    area_features = find_places_by_postcode(postcode)
+    _, area_features = find_places_by_postcode(postcode)
     # Use AI to generate summary here
     summary = generate_summary(county, waste_size, waste_type, area_features)
 
