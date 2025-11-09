@@ -1,0 +1,62 @@
+flowchart TD
+    %% ===== External Services =====
+    subgraph EXT[🌐 External Services & APIs]
+        GMaps["🗺️ Google Maps API<br/>Geocoding & Spatial Data"]
+        Supabase["🗄️ Supabase<br/>Database, Auth, Storage"]
+        GeminiAI["✨ Google Gemini<br/>Vision & Text AI"]
+        Eleven["🔊 ElevenLabs (TTS)<br/>Accessibility"]
+    end
+
+    %% ===== Frontend Layer =====
+    subgraph FE[💻 Frontend Layer - React/Lovable App]
+        A1["1️⃣ Report Submission<br/>Photo + Postcode → API"]
+        A2["2️⃣ AI Analysis<br/>Image classification & impact calculation"]
+        A3["3️⃣ Impact Report<br/>Personalized results + Council link"]
+    end
+
+    %% ===== Backend Layer =====
+    subgraph BE[⚙️ Backend Layer - FastAPI Server]
+        B1["🚀 FastAPI App<br/>Handles requests, async tasks, data orchestration"]
+        B2["🧮 Impact Calculation Engine"]
+        B3["🗺️ Postcode → County Mapping"]
+        B4["🔍 Council Data Lookup"]
+        B5["📤 Image Upload Processor"]
+    end
+
+    %% ===== AI Processing Pipeline =====
+    subgraph AI[🤖 AI Processing Pipeline]
+        C1["📸 Waste Size Classifier<br/>Gemini Vision"]
+        C2["🏷️ Waste Type Classifier<br/>Gemini Vision"]
+        C3["📝 Impact Summary Generator<br/>Gemini Text"]
+        C4["🏛️ Council Finder<br/>Gemini + Google Search"]
+    end
+
+    %% ===== Flow Connections =====
+    A1 -->|"Submit Report"| B1
+    B1 -->|"Trigger Processing"| B5
+    B5 -->|"Analyze Image"| AI
+    AI -->|"Return Results"| B1
+    B1 -->|"Send Response"| A2
+    A2 -->|"Display Report"| A3
+
+    %% Backend internal flow
+    B1 --> B2
+    B1 --> B3
+    B1 --> B4
+
+    %% Backend ↔ External Services
+    B1 -.-> Supabase
+    B1 -.-> GMaps
+    B1 -.-> GeminiAI
+
+    %% Frontend ↔ External Services (direct call)
+    FE -.-> Eleven
+
+    %% AI ↔ Gemini dependency
+    C1 -.-> GeminiAI
+    C2 -.-> GeminiAI
+    C3 -.-> GeminiAI
+    C4 -.-> GeminiAI
+
+    %% Data Storage
+    B1 -->|"Store & Retrieve Data"| Supabase

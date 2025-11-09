@@ -1,13 +1,13 @@
-import googlemaps
-from typing import List, Tuple
-import json
 import os
+from typing import List, Tuple
+
+import googlemaps
 
 # Initialize the Google Maps client
 # Make sure to set your API key as an environment variable or replace it here
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "YOUR_API_KEY_HERE")
 gmaps = googlemaps.Client(key=GOOGLE_API_KEY)
-DEFAULT_DISTANCE=150
+DEFAULT_DISTANCE = 150
 
 API_TYPE_TO_CATEGORY = {
     "apartment_building": "residentialAreas",
@@ -49,6 +49,7 @@ API_TYPE_TO_CATEGORY = {
     "dog_park": "playgroundsAndRecreationalFacilitiesForChildren",
 }
 
+
 def postcode_to_coordinates(postcode: str) -> Tuple[float, float]:
     """
     Convert a postcode to latitude and longitude coordinates.
@@ -66,7 +67,7 @@ def postcode_to_coordinates(postcode: str) -> Tuple[float, float]:
         geocode_result = gmaps.geocode(address=postcode)
         if not geocode_result:
             raise ValueError(f"Could not find coordinates for postcode: {postcode}")
-        
+
         location = geocode_result[0]["geometry"]["location"]
         return location["lat"], location["lng"]
     except Exception as e:
@@ -86,14 +87,14 @@ def get_nearby_place_types(latitude: float, longitude: float, radius: int = DEFA
         List of place type categories found nearby
     """
     found_types = set()
-    
+
     places_result = gmaps.places_nearby(
         location=(latitude, longitude),
         radius=radius,
     )
 
     type_set = set()
-    for result in places_result.get('results',[]):
+    for result in places_result.get('results', []):
         type_set.update(result.get('types'))
 
     if debug:
@@ -114,7 +115,8 @@ def get_nearby_place_types(latitude: float, longitude: float, radius: int = DEFA
     return result
 
 
-def find_places_by_postcode(postcode: str, radius: int = DEFAULT_DISTANCE, debug=False) -> Tuple[Tuple[float, float], List[str]]:
+def find_places_by_postcode(postcode: str, radius: int = DEFAULT_DISTANCE, debug=False) -> Tuple[
+    Tuple[float, float], List[str]]:
     """
     Convenience function that combines postcode lookup and nearby place type search.
     
@@ -138,8 +140,8 @@ if __name__ == "__main__":
     load_dotenv()
     try:
         postcode = f"{sys.argv[1]}"  # Replace with your postcode
-        coords, types = find_places_by_postcode(postcode,debug=True)
-        
+        coords, types = find_places_by_postcode(postcode, debug=True)
+
         print(f"Postcode: {postcode}")
         print(f"Coordinates: {coords[0]}, {coords[1]}")
         print(f"Nearby place types found:")

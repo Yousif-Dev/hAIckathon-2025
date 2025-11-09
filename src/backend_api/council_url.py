@@ -1,9 +1,10 @@
+import json
 import os
 from typing import Optional, Dict, Literal
+
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
-import json
 
 
 class CouncilReportingInfo(BaseModel):

@@ -1,7 +1,9 @@
 import base64
 import os
+
 from google import genai
 from google.genai import types
+
 
 def classify_waste_size_with_gemini(image_data: bytes) -> str:
     """
@@ -48,11 +50,11 @@ Your response (one word only):"""
 
         # Generate content
         response = client.models.generate_content(model="gemini-2.5-flash",
-        contents = [
-            types.Part.from_text(text=prompt),
-            types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
-        ]
-        )
+                                                  contents=[
+                                                      types.Part.from_text(text=prompt),
+                                                      types.Part.from_bytes(data=image_data, mime_type="image/jpeg")
+                                                  ]
+                                                  )
 
         # Extract and clean the response
         classification = response.text.strip().lower()
@@ -77,9 +79,11 @@ Your response (one word only):"""
         # Fallback to medium_bag on error
         return "medium_bag"
 
+
 if __name__ == "__main__":
     # Test the function with a sample image
     from dotenv import load_dotenv
+
     load_dotenv()  # Load environment variables from .env file
     test_image_path = r"C:\Users\yousi\Downloads\small_bag_example_fly.png"
     with open(test_image_path, "rb") as img_file:
